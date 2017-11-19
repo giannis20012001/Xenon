@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Xenon</string>
+    <string name="save_to_external_storage">Save To External Storage</string>
+</resources>
