@@ -1,5 +1,6 @@
 package org.lumi.xenon;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -149,10 +150,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressWarnings("Duplicates")
     private void useReflection() {
+        //counter variables
+        int intCounter = 0;
+        int nonIntCounter = 0;
+        Class[] params;
+        Method method;
+        Object returnValue;
+        Object obj;
+
         //Make reflection call
         //String className = "android.content.Context";
-        AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
+        //AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
+        ActivityManager varClass = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -165,8 +176,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Method[] checkMethod = classToInvestigate.getDeclaredMethods();
         methodsTbl = new String[checkMethod.length];
-        // create temp list and store values
-        List<String> valSet = new ArrayList<String>();
 
         int i = 0;
         for(Method m : checkMethod) {
@@ -180,12 +189,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             FileOutputStream fos = new FileOutputStream(myExternalFile);
             //Classic way
-            for (Map.Entry<String, List<String>> entry : methodParameters.entrySet()) {
+            for (Map.Entry<String, List<String>> elements : methodParameters.entrySet()) {
                 fos.write("[".getBytes());
-                fos.write(entry.getKey().getBytes());
+                fos.write(elements.getKey().getBytes()); //Write method
                 fos.write("(".getBytes());
-                for (String element :entry.getValue()) {
-                    fos.write(element.getBytes());
+                for (String element :elements.getValue()) {
+                    fos.write(element.getBytes()); //Write method parameters
                     fos.write(";".getBytes());
 
                 }
@@ -193,6 +202,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fos.write(")".getBytes());
                 fos.write("]".getBytes());
                 fos.write(System.getProperty("line.separator").getBytes());
+                fos.write("<===================================>".getBytes());
+                fos.write(System.getProperty("line.separator").getBytes());
+                //Execute method call with specific parameters
+
+                for (String element :elements.getValue()) {
+                    if (element.equals("int")) {
+                        intCounter++;
+
+                    } else {
+                        nonIntCounter++;
+
+                    }
+
+                }
+
+                if ((intCounter > 0) && (nonIntCounter == 0)) { //single int parameter
+                    params = new Class[intCounter];
+                    for (int j = 0; j < intCounter; j++) {
+                        params[j] = Integer.TYPE;
+
+                    }
+
+                    //Test for Min value
+                    try {
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+                        //obj = classToInvestigate.newInstance();
+                        returnValue = method.invoke(classToInvestigate, Integer.MIN_VALUE);
+
+                    } catch (Exception e) {
+                        fos.write(e.toString().getBytes());
+                        fos.write(System.getProperty("line.separator").getBytes());
+
+                    }
+
+                    //Test for Max value
+                    try {
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+                        //obj = classToInvestigate.newInstance();
+                        returnValue = method.invoke(classToInvestigate, Integer.MAX_VALUE);
+
+                    } catch (Exception e) {
+                        fos.write(e.toString().getBytes());
+
+                    }
+
+                }
+
+                fos.write(System.getProperty("line.separator").getBytes());
+                fos.write("<===================================>".getBytes());
+                fos.write(System.getProperty("line.separator").getBytes());
+                fos.write(System.getProperty("line.separator").getBytes());
+                //Zero-out all counters for next repetition
+                intCounter = 0;
+                nonIntCounter = 0;
 
             }
 
