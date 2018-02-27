@@ -1,6 +1,5 @@
 package org.lumi.xenon;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -163,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Make reflection call
         //String className = "android.content.Context";
         //AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
-        ActivityManager varClass = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -204,8 +203,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fos.write(System.getProperty("line.separator").getBytes());
                 fos.write("<===================================>".getBytes());
                 fos.write(System.getProperty("line.separator").getBytes());
-                //Execute method call with specific parameters
 
+                //Execute method call with specific parameters
                 for (String element :elements.getValue()) {
                     if (element.equals("int")) {
                         intCounter++;
@@ -271,7 +270,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
-        Snackbar.make(view, "ClassComponents.txt saved to External Storage...", Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view,
+                "ClassComponents.txt saved to External Storage...",
+                Snackbar.LENGTH_LONG).show();
 
     }
 
@@ -323,6 +324,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String[] methodsTbl;
     String filename = "ClassComponents.txt";
     private Map<String, List<String>> methodParameters = new HashMap<String, List<String>>();  // create map to store methods parameters
+    //private Map<String, List<String>> methodParameters = new HashMap<>();
     private static final int PERMISSION_REQUEST_CODE = 200;
 
 }
