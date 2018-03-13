@@ -18,6 +18,7 @@ import android.widget.Button;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,7 +155,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //counter variables
         int intCounter = 0;
         int nonIntCounter = 0;
-        Class[] params;
+        int stringCounter = 0;
+        int nonStringCounter = 0;
+        Class[] paramInt;
+        Class[] paramString;
         Method method;
         Object returnValue;
         Object obj;
@@ -180,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for(Method m : checkMethod) {
             // Found a method m
             methodsTbl[i] = m.getName();
+            //Get method parameters
             methodParameters.put(methodsTbl[i], getParameterNames(m));
             i++;
 
@@ -204,44 +209,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fos.write("<===================================>".getBytes());
                 fos.write(System.getProperty("line.separator").getBytes());
 
-                //Execute method call with specific parameters
+                //==================================================================================
+                //Executing found method using reflection
+                //==================================================================================
                 for (String element :elements.getValue()) {
                     if (element.equals("int")) {
                         intCounter++;
 
-                    } else {
+                    } else if (!element.equals("int")){
                         nonIntCounter++;
+
+                    } else if (element.equals("java.lang.String")) {
+                        stringCounter++;
+
+                    } else if (!element.equals("java.lang.String")){
+                        nonStringCounter++;
 
                     }
 
                 }
 
+                //Execute method call with specific int or string parameters
                 if ((intCounter > 0) && (nonIntCounter == 0)) { //single int parameter
-                    params = new Class[intCounter];
+                    paramInt = new Class[intCounter];
                     for (int j = 0; j < intCounter; j++) {
-                        params[j] = Integer.TYPE;
+                        paramInt[j] = Integer.TYPE; //int parameter type
 
                     }
 
-                    //Test for Min value
+                    //Test for Min int value
                     try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
                         //obj = classToInvestigate.newInstance();
                         returnValue = method.invoke(classToInvestigate, Integer.MIN_VALUE);
 
-                    } catch (Exception e) {
+                    } catch (NoSuchMethodException | InvocationTargetException
+                            | IllegalAccessException e) {
                         fos.write(e.toString().getBytes());
                         fos.write(System.getProperty("line.separator").getBytes());
 
                     }
 
-                    //Test for Max value
+                    //Test for Max int value
                     try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
                         //obj = classToInvestigate.newInstance();
                         returnValue = method.invoke(classToInvestigate, Integer.MAX_VALUE);
 
-                    } catch (Exception e) {
+                    } catch (NoSuchMethodException | IllegalAccessException
+                            | InvocationTargetException e) {
+                        fos.write(e.toString().getBytes());
+                        fos.write(System.getProperty("line.separator").getBytes());
+
+                    }
+
+                }else if ((stringCounter > 0) && (nonStringCounter == 0)) { //single string parameter
+                    paramString = new Class[stringCounter];
+                    for (int j = 0; j < stringCounter; j++) {
+                        paramString[j] = String.class; //String parameter type
+
+                    }
+
+                    //Test for Min string value
+                    try {
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
+                        //obj = classToInvestigate.newInstance();
+                        returnValue = method.invoke(classToInvestigate, "abc");
+
+                    } catch (NoSuchMethodException | IllegalAccessException
+                            | InvocationTargetException e) {
+                        fos.write(e.toString().getBytes());
+                        fos.write(System.getProperty("line.separator").getBytes());
+
+                    }
+
+                    //Test for Max string value
+                    try {
+                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
+                        //obj = classToInvestigate.newInstance();
+                        String repeated = new String(new char[2147483647]).replace("\0", "c");
+                        returnValue = method.invoke(classToInvestigate, repeated);
+
+                    } catch (NoSuchMethodException | IllegalAccessException
+                            | InvocationTargetException e) {
                         fos.write(e.toString().getBytes());
 
                     }
@@ -255,6 +305,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //Zero-out all counters for next repetition
                 intCounter = 0;
                 nonIntCounter = 0;
+                stringCounter = 0;
+                nonStringCounter = 0;
 
             }
 
@@ -289,6 +341,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         return parameterNames;
+
+    }
+
+    private void executeMethodCallWithIntParam() {
+        //
+
+    }
+
+    private void executeMethodCallWithStringParam() {
+        //
 
     }
 
