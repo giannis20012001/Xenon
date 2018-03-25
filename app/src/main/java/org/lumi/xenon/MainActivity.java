@@ -1,5 +1,6 @@
 package org.lumi.xenon;
 
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -11,8 +12,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 
 import java.io.File;
@@ -154,19 +155,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void useReflection() {
         //counter variables
         int intCounter = 0;
-        int nonIntCounter = 0;
         int stringCounter = 0;
-        int nonStringCounter = 0;
-        Class[] paramInt;
-        Class[] paramString;
-        Method method;
-        Object returnValue;
-        Object obj;
+        int nonIntOrStringCounter = 0;
+        String[] methodsTbl;
 
         //Make reflection call
         //String className = "android.content.Context";
-        //AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
-        AccessibilityManager varClass = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
+        AccountManager varClass = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -177,11 +172,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
-        Method[] checkMethod = classToInvestigate.getDeclaredMethods();
-        methodsTbl = new String[checkMethod.length];
+        Method[] checkMethods = classToInvestigate.getDeclaredMethods();//Inherited methods are excluded
+        methodsTbl = new String[checkMethods.length];
 
         int i = 0;
-        for(Method m : checkMethod) {
+        for(Method m : checkMethods) {
             // Found a method m
             methodsTbl[i] = m.getName();
             //Get method parameters
@@ -216,85 +211,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (element.equals("int")) {
                         intCounter++;
 
-                    } else if (!element.equals("int")){
-                        nonIntCounter++;
-
-                    } else if (element.equals("java.lang.String")) {
+                    }  else if (element.equals("java.lang.String")) {
                         stringCounter++;
 
-                    } else if (!element.equals("java.lang.String")){
-                        nonStringCounter++;
+                    } else if (!element.equals("int") || !element.equals("java.lang.String")){
+                        nonIntOrStringCounter++;
 
                     }
 
                 }
 
                 //Execute method call with specific int or string parameters
-                if ((intCounter > 0) && (nonIntCounter == 0)) { //single int parameter
-                    paramInt = new Class[intCounter];
-                    for (int j = 0; j < intCounter; j++) {
-                        paramInt[j] = Integer.TYPE; //int parameter type
+                if ((intCounter > 0) && (stringCounter == 0)
+                        && (nonIntOrStringCounter == 0)) { //only int parameters
+                    Log.i(TAG, "Executing methods with MIN/MAX int values...");
+                    executeMethodCallWithIntParam(
+                            elements,
+                            classToInvestigate,
+                            varClass,
+                            fos,
+                            intCounter);
 
-                    }
+                }
 
-                    //Test for Min int value
-                    try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
-                        //obj = classToInvestigate.newInstance();
-                        returnValue = method.invoke(classToInvestigate, Integer.MIN_VALUE);
+                if ((stringCounter > 0) && (intCounter == 0)
+                        && (nonIntOrStringCounter == 0)) { //only string parameters
+                    Log.i(TAG, "Executing methods with MIN/MAX String values...");
+                    executeMethodCallWithStringParam(
+                            elements,
+                            classToInvestigate,
+                            varClass,
+                            fos,
+                            stringCounter);
 
-                    } catch (NoSuchMethodException | InvocationTargetException
-                            | IllegalAccessException e) {
-                        fos.write(e.toString().getBytes());
-                        fos.write(System.getProperty("line.separator").getBytes());
+                }
 
-                    }
-
-                    //Test for Max int value
-                    try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
-                        //obj = classToInvestigate.newInstance();
-                        returnValue = method.invoke(classToInvestigate, Integer.MAX_VALUE);
-
-                    } catch (NoSuchMethodException | IllegalAccessException
-                            | InvocationTargetException e) {
-                        fos.write(e.toString().getBytes());
-                        fos.write(System.getProperty("line.separator").getBytes());
-
-                    }
-
-                }else if ((stringCounter > 0) && (nonStringCounter == 0)) { //single string parameter
-                    paramString = new Class[stringCounter];
-                    for (int j = 0; j < stringCounter; j++) {
-                        paramString[j] = String.class; //String parameter type
-
-                    }
-
-                    //Test for Min string value
-                    try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
-                        //obj = classToInvestigate.newInstance();
-                        returnValue = method.invoke(classToInvestigate, "abc");
-
-                    } catch (NoSuchMethodException | IllegalAccessException
-                            | InvocationTargetException e) {
-                        fos.write(e.toString().getBytes());
-                        fos.write(System.getProperty("line.separator").getBytes());
-
-                    }
-
-                    //Test for Max string value
-                    try {
-                        method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
-                        //obj = classToInvestigate.newInstance();
-                        String repeated = new String(new char[2147483647]).replace("\0", "c");
-                        returnValue = method.invoke(classToInvestigate, repeated);
-
-                    } catch (NoSuchMethodException | IllegalAccessException
-                            | InvocationTargetException e) {
-                        fos.write(e.toString().getBytes());
-
-                    }
+                if ((intCounter > 0) && (stringCounter > 0)
+                        && (nonIntOrStringCounter == 0)) { //Mixed int & string parameters
+                    Log.i(TAG, "Executing methods with MIN/MAX int & String values...");
+                    executeMethodCallWithIntAndStringParam(
+                            elements,
+                            classToInvestigate,
+                            varClass,
+                            fos,
+                            intCounter,
+                            stringCounter);
 
                 }
 
@@ -304,9 +265,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fos.write(System.getProperty("line.separator").getBytes());
                 //Zero-out all counters for next repetition
                 intCounter = 0;
-                nonIntCounter = 0;
                 stringCounter = 0;
-                nonStringCounter = 0;
+                nonIntOrStringCounter = 0;
 
             }
 
@@ -344,13 +304,206 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void executeMethodCallWithIntParam() {
-        //
+    private void executeMethodCallWithIntParam(Map.Entry<String, List<String>> elements,
+                                               Class classToInvestigate,
+                                               AccountManager varClass, FileOutputStream fos,
+                                               int intCounter) throws IOException {
+        Class[] paramInt;
+        //Class classToInvestigate = null;
+        Method method;
+        //Object returnValue;
+        Integer [] tempIntMinArray = new Integer[intCounter];
+        Integer [] tempIntMaxArray = new Integer[intCounter];
+
+        paramInt = new Class[intCounter];
+        for (int j = 0; j < intCounter; j++) {
+            paramInt[j] = Integer.TYPE; //int parameter type
+
+        }
+
+        //Test for Min int value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
+            Log.i(TAG, "Method invoked:"  + method);
+            //obj = classToInvestigate.newInstance();
+            for (int i = 0; i < tempIntMinArray.length; i++) {
+                tempIntMinArray[i] = Integer.MIN_VALUE;
+
+            }
+
+            method.invoke(varClass, tempIntMinArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | InvocationTargetException
+                | IllegalAccessException e) {
+            fos.write(e.toString().getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        }
+
+        //Test for Max int value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramInt);
+            //obj = classToInvestigate.newInstance();
+            for (int i = 0; i < tempIntMaxArray.length; i++) {
+                tempIntMaxArray[i] = Integer.MAX_VALUE;
+
+            }
+
+            method.invoke(varClass, tempIntMaxArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            fos.write(e.toString().getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        }
 
     }
 
-    private void executeMethodCallWithStringParam() {
-        //
+    private void executeMethodCallWithStringParam(Map.Entry<String, List<String>> elements,
+                                                  Class classToInvestigate,
+                                                  AccountManager varClass,
+                                                  FileOutputStream fos, int stringCounter)
+            throws IOException {
+        Class[] paramString;
+        //Class classToInvestigate = null;
+        Method method;
+        //Object returnValue;
+        String [] tempStringMinArray = new String[stringCounter];
+        String [] tempStringMaxArray = new String[stringCounter];
+
+        paramString = new Class[stringCounter];
+        for (int j = 0; j < stringCounter; j++) {
+            paramString[j] = String.class; //String parameter type
+
+        }
+
+        //Test for Min string value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
+            Log.i(TAG, "Method invoked:"  + method);
+            //obj = classToInvestigate.newInstance();
+            for (int i = 0; i < tempStringMinArray.length; i++) {
+                tempStringMinArray[i] = "abc";
+
+            }
+
+            method.invoke(varClass, tempStringMinArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            fos.write(e.toString().getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        }
+
+        //Test for Max string value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
+            //obj = classToInvestigate.newInstance();
+            //String repeated = new String(new char[2147483647]).replace("\0", "c");
+            String repeated = new String(new char[21474836]).replace("\0", "c");
+            for (int i = 0; i < tempStringMaxArray.length; i++) {
+                tempStringMaxArray[i] = repeated;
+
+            }
+
+            method.invoke(varClass, tempStringMaxArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            fos.write(e.toString().getBytes());
+
+        }
+
+    }
+
+    private void executeMethodCallWithIntAndStringParam(Map.Entry<String, List<String>> elements,
+                                                        Class classToInvestigate,
+                                                        AccountManager varClass,
+                                                        FileOutputStream fos, int intCounter,
+                                                        int stringCounter) throws IOException {
+        /*Class[] paramInt;
+        Class[] paramString;*/
+
+        Method method;
+        Object[] obj = {elements.getValue()};
+        Class<?> params[] = new Class[obj.length];
+        Integer [] tempIntMinArray = new Integer[intCounter];
+        Integer [] tempIntMaxArray = new Integer[intCounter];
+        String [] tempStringMinArray = new String[stringCounter];
+        String [] tempStringMaxArray = new String[stringCounter];
+
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] instanceof Integer) {
+                params[i] = Integer.TYPE;
+
+            } else if (obj[i] instanceof String) {
+                params[i] = String.class;
+
+            }
+
+        }
+
+        /*paramInt = new Class[intCounter];
+        for (int j = 0; j < intCounter; j++) {
+            paramInt[j] = Integer.TYPE; //int parameter type
+
+        }
+
+        paramString = new Class[stringCounter];
+        for (int j = 0; j < stringCounter; j++) {
+            paramString[j] = String.class; //String parameter type
+
+        }*/
+
+        //Test for Min int & String value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+            Log.i(TAG, "Method invoked:"  + method);
+
+            for (int i = 0; i < tempIntMinArray.length; i++) {
+                tempIntMinArray[i] = Integer.MIN_VALUE;
+
+            }
+
+            method.invoke(varClass, tempIntMinArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | InvocationTargetException
+                | IllegalAccessException e) {
+            fos.write(e.toString().getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        }
+
+        //Test for Max int & String value
+        try {
+            method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
+            for (int i = 0; i < tempIntMaxArray.length; i++) {
+                tempIntMaxArray[i] = Integer.MAX_VALUE;
+
+            }
+
+            method.invoke(varClass, tempIntMaxArray);
+            fos.write("Executed...!".getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            fos.write(e.toString().getBytes());
+            fos.write(System.getProperty("line.separator").getBytes());
+
+        }
 
     }
 
@@ -383,10 +536,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //=================================================================================================================
     private View view;
     private File myExternalFile;
-    private String[] methodsTbl;
     String filename = "ClassComponents.txt";
-    private Map<String, List<String>> methodParameters = new HashMap<String, List<String>>();  // create map to store methods parameters
-    //private Map<String, List<String>> methodParameters = new HashMap<>();
+    private Map<String, List<String>> methodParameters = new HashMap<>();  //Create map to store methods parameters
     private static final int PERMISSION_REQUEST_CODE = 200;
+    private static final String TAG = "Xenon";
 
 }
