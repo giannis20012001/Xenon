@@ -1,6 +1,6 @@
 package org.lumi.xenon;
 
-import android.accounts.AccountManager;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -157,11 +157,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int intCounter = 0;
         int stringCounter = 0;
         int nonIntOrStringCounter = 0;
+        int intMethodReflectionPerformed = 0;
+        int stringMethodReflectionPerformed = 0;
+        int intAndStringMethodReflectionPerformed = 0;
+        int totoal;
+        //String repeatedStringVal = new String(new char[2147483647]).replace("\0", "c");
+        String repeatedStringVal = new String(
+                new char[21474836]).replace(
+                        "\0",
+                "c");
         String[] methodsTbl;
 
+        Log.i(TAG, "Max string generated value: " + repeatedStringVal);
         //Make reflection call
         //String className = "android.content.Context";
-        AccountManager varClass = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
+        ActivityManager varClass = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -189,21 +199,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FileOutputStream fos = new FileOutputStream(myExternalFile);
             //Classic way
             for (Map.Entry<String, List<String>> elements : methodParameters.entrySet()) {
-                fos.write("[".getBytes());
-                fos.write(elements.getKey().getBytes()); //Write method
-                fos.write("(".getBytes());
-                for (String element :elements.getValue()) {
-                    fos.write(element.getBytes()); //Write method parameters
-                    fos.write(";".getBytes());
-
-                }
-
-                fos.write(")".getBytes());
-                fos.write("]".getBytes());
-                fos.write(System.getProperty("line.separator").getBytes());
-                fos.write("<===================================>".getBytes());
-                fos.write(System.getProperty("line.separator").getBytes());
-
                 //==================================================================================
                 //Executing found method using reflection
                 //==================================================================================
@@ -224,6 +219,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //Execute method call with specific int or string parameters
                 if ((intCounter > 0) && (stringCounter == 0)
                         && (nonIntOrStringCounter == 0)) { //only int parameters
+                    fos.write("[".getBytes());
+                    fos.write(elements.getKey().getBytes()); //Write method
+                    fos.write("(".getBytes());
+                    for (String element :elements.getValue()) {
+                        fos.write(element.getBytes()); //Write method parameters
+                        fos.write(";".getBytes());
+
+                    }
+
+                    fos.write(")".getBytes());
+                    fos.write("]".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+
                     Log.i(TAG, "Executing methods with MIN/MAX int values...");
                     executeMethodCallWithIntParam(
                             elements,
@@ -231,44 +241,91 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             varClass,
                             fos,
                             intCounter);
+                    intMethodReflectionPerformed++;
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
 
                 }
 
                 if ((stringCounter > 0) && (intCounter == 0)
                         && (nonIntOrStringCounter == 0)) { //only string parameters
+                    fos.write("[".getBytes());
+                    fos.write(elements.getKey().getBytes()); //Write method
+                    fos.write("(".getBytes());
+                    for (String element :elements.getValue()) {
+                        fos.write(element.getBytes()); //Write method parameters
+                        fos.write(";".getBytes());
+
+                    }
+
+                    fos.write(")".getBytes());
+                    fos.write("]".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+
                     Log.i(TAG, "Executing methods with MIN/MAX String values...");
                     executeMethodCallWithStringParam(
                             elements,
                             classToInvestigate,
                             varClass,
                             fos,
-                            stringCounter);
+                            stringCounter,
+                            repeatedStringVal);
+                    stringMethodReflectionPerformed++;
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
 
                 }
 
                 if ((intCounter > 0) && (stringCounter > 0)
                         && (nonIntOrStringCounter == 0)) { //Mixed int & string parameters
+                    fos.write("[".getBytes());
+                    fos.write(elements.getKey().getBytes()); //Write method
+                    fos.write("(".getBytes());
+                    for (String element :elements.getValue()) {
+                        fos.write(element.getBytes()); //Write method parameters
+                        fos.write(";".getBytes());
+
+                    }
+
+                    fos.write(")".getBytes());
+                    fos.write("]".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+
                     Log.i(TAG, "Executing methods with MIN/MAX int & String values...");
                     executeMethodCallWithIntAndStringParam(
                             elements,
                             classToInvestigate,
                             varClass,
                             fos,
-                            intCounter,
-                            stringCounter);
+                            repeatedStringVal);
+                    intAndStringMethodReflectionPerformed++;
+                    fos.write("<===================================>".getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
+                    fos.write(System.getProperty("line.separator").getBytes());
 
                 }
 
-                fos.write(System.getProperty("line.separator").getBytes());
-                fos.write("<===================================>".getBytes());
-                fos.write(System.getProperty("line.separator").getBytes());
-                fos.write(System.getProperty("line.separator").getBytes());
                 //Zero-out all counters for next repetition
                 intCounter = 0;
                 stringCounter = 0;
                 nonIntOrStringCounter = 0;
 
             }
+
+            totoal = intMethodReflectionPerformed + stringMethodReflectionPerformed
+                    + intAndStringMethodReflectionPerformed;
+            Log.i(TAG, "Integer reflection performed: " + intMethodReflectionPerformed);
+            Log.i(TAG, "String reflection performed: " + stringMethodReflectionPerformed);
+            Log.i(TAG, "Integer & String reflection performed: "
+                    + intAndStringMethodReflectionPerformed);
+            Log.i(TAG, "Total reflection performed: " + totoal);
 
             //Using streams
             /*methodParameters.entrySet().stream().forEach(item ->
@@ -306,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void executeMethodCallWithIntParam(Map.Entry<String, List<String>> elements,
                                                Class classToInvestigate,
-                                               AccountManager varClass, FileOutputStream fos,
+                                               Object varClass, FileOutputStream fos,
                                                int intCounter) throws IOException {
         Class[] paramInt;
         //Class classToInvestigate = null;
@@ -366,9 +423,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void executeMethodCallWithStringParam(Map.Entry<String, List<String>> elements,
                                                   Class classToInvestigate,
-                                                  AccountManager varClass,
-                                                  FileOutputStream fos, int stringCounter)
-            throws IOException {
+                                                  Object varClass,
+                                                  FileOutputStream fos, int stringCounter,
+                                                  String repeatedStringVal) throws IOException {
         Class[] paramString;
         //Class classToInvestigate = null;
         Method method;
@@ -407,10 +464,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             method = classToInvestigate.getDeclaredMethod(elements.getKey(), paramString);
             //obj = classToInvestigate.newInstance();
-            //String repeated = new String(new char[2147483647]).replace("\0", "c");
-            String repeated = new String(new char[21474836]).replace("\0", "c");
             for (int i = 0; i < tempStringMaxArray.length; i++) {
-                tempStringMaxArray[i] = repeated;
+                tempStringMaxArray[i] = repeatedStringVal;
 
             }
 
@@ -428,54 +483,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void executeMethodCallWithIntAndStringParam(Map.Entry<String, List<String>> elements,
                                                         Class classToInvestigate,
-                                                        AccountManager varClass,
-                                                        FileOutputStream fos, int intCounter,
-                                                        int stringCounter) throws IOException {
-        /*Class[] paramInt;
-        Class[] paramString;*/
-
+                                                        Object varClass,
+                                                        FileOutputStream fos,
+                                                        String repeatedStringVal) throws IOException {
         Method method;
-        Object[] obj = {elements.getValue()};
-        Class<?> params[] = new Class[obj.length];
-        Integer [] tempIntMinArray = new Integer[intCounter];
-        Integer [] tempIntMaxArray = new Integer[intCounter];
-        String [] tempStringMinArray = new String[stringCounter];
-        String [] tempStringMaxArray = new String[stringCounter];
-
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] instanceof Integer) {
+        Class<?> params[] = new Class[elements.getValue().size()];
+        Object [] tempMinArray = new Object[elements.getValue().size()];
+        Object [] tempMaxArray = new Object[elements.getValue().size()];
+        for (int i = 0; i < elements.getValue().size(); i++) {
+            if (elements.getValue().get(i) == "int") {
                 params[i] = Integer.TYPE;
+                tempMinArray[i] = Integer.MIN_VALUE;
+                tempMaxArray[i] = Integer.MAX_VALUE;
 
-            } else if (obj[i] instanceof String) {
+            } else if (elements.getValue().get(i) == "java.lang.String") {
                 params[i] = String.class;
+                tempMinArray[i] = "abc";
+                tempMaxArray[i] = repeatedStringVal;
 
             }
 
         }
-
-        /*paramInt = new Class[intCounter];
-        for (int j = 0; j < intCounter; j++) {
-            paramInt[j] = Integer.TYPE; //int parameter type
-
-        }
-
-        paramString = new Class[stringCounter];
-        for (int j = 0; j < stringCounter; j++) {
-            paramString[j] = String.class; //String parameter type
-
-        }*/
 
         //Test for Min int & String value
         try {
             method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
             Log.i(TAG, "Method invoked:"  + method);
-
-            for (int i = 0; i < tempIntMinArray.length; i++) {
-                tempIntMinArray[i] = Integer.MIN_VALUE;
-
-            }
-
-            method.invoke(varClass, tempIntMinArray);
+            method.invoke(varClass, tempMinArray);
             fos.write("Executed...!".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
@@ -489,12 +523,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Test for Max int & String value
         try {
             method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
-            for (int i = 0; i < tempIntMaxArray.length; i++) {
-                tempIntMaxArray[i] = Integer.MAX_VALUE;
-
-            }
-
-            method.invoke(varClass, tempIntMaxArray);
+            method.invoke(varClass, tempMaxArray);
             fos.write("Executed...!".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
