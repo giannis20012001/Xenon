@@ -1,6 +1,7 @@
 package org.lumi.xenon;
 
-import android.app.ActivityManager;
+import android.app.AppOpsManager;
+import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, "Max string generated value: " + repeatedStringVal);
         //Make reflection call
         //String className = "android.content.Context";
-        ActivityManager varClass = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        AppOpsManager varClass = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -389,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             method.invoke(varClass, tempIntMinArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | InvocationTargetException
@@ -409,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             method.invoke(varClass, tempIntMaxArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | IllegalAccessException
@@ -450,7 +451,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             method.invoke(varClass, tempStringMinArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | IllegalAccessException
@@ -470,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             method.invoke(varClass, tempStringMaxArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | IllegalAccessException
@@ -510,7 +511,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
             Log.i(TAG, "Method invoked:"  + method);
             method.invoke(varClass, tempMinArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | InvocationTargetException
@@ -524,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             method = classToInvestigate.getDeclaredMethod(elements.getKey(), params);
             method.invoke(varClass, tempMaxArray);
-            fos.write("Executed...!".getBytes());
+            fos.write("executed with no problem".getBytes());
             fos.write(System.getProperty("line.separator").getBytes());
 
         } catch (NoSuchMethodException | IllegalAccessException
