@@ -1,7 +1,5 @@
 package org.lumi.xenon;
 
-import android.app.AppOpsManager;
-import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -15,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import java.io.File;
@@ -161,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int intMethodReflectionPerformed = 0;
         int stringMethodReflectionPerformed = 0;
         int intAndStringMethodReflectionPerformed = 0;
-        int totoal;
+        int total;
         //String repeatedStringVal = new String(new char[2147483647]).replace("\0", "c");
         String repeatedStringVal = new String(
                 new char[21474836]).replace(
@@ -172,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, "Max string generated value: " + repeatedStringVal);
         //Make reflection call
         //String className = "android.content.Context";
-        AppOpsManager varClass = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        WindowManager varClass = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
@@ -320,13 +319,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
 
-            totoal = intMethodReflectionPerformed + stringMethodReflectionPerformed
+            total = intMethodReflectionPerformed + stringMethodReflectionPerformed
                     + intAndStringMethodReflectionPerformed;
             Log.i(TAG, "Integer reflection performed: " + intMethodReflectionPerformed);
             Log.i(TAG, "String reflection performed: " + stringMethodReflectionPerformed);
             Log.i(TAG, "Integer & String reflection performed: "
                     + intAndStringMethodReflectionPerformed);
-            Log.i(TAG, "Total reflection performed: " + totoal);
+            Log.i(TAG, "Total reflection performed: " + total);
 
             //Using streams
             /*methodParameters.entrySet().stream().forEach(item ->
