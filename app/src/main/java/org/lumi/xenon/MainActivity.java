@@ -35,11 +35,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button save_to_external_storage = findViewById(R.id.save_to_external_storage);
-        save_to_external_storage.setOnClickListener(this);
+        //Original button to run all reflection logic
+        Button Run_all_Class_Methods_and_save_to_external_storage =
+                findViewById(R.id.Run_all_Class_Methods_and_save_to_external_storage);
+        Run_all_Class_Methods_and_save_to_external_storage.setOnClickListener(this);
+        //Individual reflection logic for a specific classes
+        Button Run_android_media_AudioManager = findViewById(R.id.Run_android_media_AudioManager);
+        Run_android_media_AudioManager.setOnClickListener(this);
+        Button Run_android_view_inputmethod_InputMethodManager =
+                findViewById(R.id.Run_android_view_inputmethod_InputMethodManager);
+        Run_android_view_inputmethod_InputMethodManager.setOnClickListener(this);
+        Button Run_android_media_session_MediaSessionManager =
+                findViewById(R.id.Run_android_media_session_MediaSessionManager);
+        Run_android_media_session_MediaSessionManager.setOnClickListener(this);
+        Button Run_android_telephony_TelephonyManager =
+                findViewById(R.id.Run_android_telephony_TelephonyManager);
+        Run_android_telephony_TelephonyManager.setOnClickListener(this);
+        Button Run_android_app_UiModeManager = findViewById(R.id.Run_android_app_UiModeManager);
+        Run_android_app_UiModeManager.setOnClickListener(this);
 
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
-            save_to_external_storage.setEnabled(false);
+            Run_all_Class_Methods_and_save_to_external_storage.setEnabled(false);
+            Run_android_media_AudioManager.setEnabled(false);
+            Run_android_view_inputmethod_InputMethodManager.setEnabled(false);
+            Run_android_media_session_MediaSessionManager.setEnabled(false);
+            Run_android_telephony_TelephonyManager.setEnabled(false);
+            Run_android_app_UiModeManager.setEnabled(false);
 
         }
         else {
@@ -56,14 +77,87 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = v.getId();
 
         switch (id) {
-            case R.id.save_to_external_storage:
+            case R.id.Run_all_Class_Methods_and_save_to_external_storage:
                 if (!checkPermission()) {
                     requestPermission();
-                    useReflection();
+                    useReflection(null);
 
                 } else {
-                    Snackbar.make(view, "Permission already granted.", Snackbar.LENGTH_LONG).show();
-                    useReflection();
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(null);
+
+                }
+                break;
+            case R.id.Run_android_media_AudioManager:
+                if (!checkPermission()) {
+                    requestPermission();
+                    useReflection(getSystemService(Context.AUDIO_SERVICE));
+
+                } else {
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(getSystemService(Context.AUDIO_SERVICE));
+
+                }
+                break;
+            case R.id.Run_android_view_inputmethod_InputMethodManager:
+                if (!checkPermission()) {
+                    requestPermission();
+                    useReflection(getSystemService(Context.INPUT_METHOD_SERVICE));
+
+                } else {
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(getSystemService(Context.INPUT_METHOD_SERVICE));
+
+                }
+                break;
+            case R.id.Run_android_media_session_MediaSessionManager:
+                if (!checkPermission()) {
+                    requestPermission();
+                    useReflection(getSystemService(Context.MEDIA_SESSION_SERVICE));
+
+                } else {
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(getSystemService(Context.MEDIA_SESSION_SERVICE));
+
+                }
+                break;
+            case R.id.Run_android_telephony_TelephonyManager:
+                if (!checkPermission()) {
+                    requestPermission();
+                    useReflection(getSystemService(Context.TELEPHONY_SERVICE));
+
+                } else {
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(getSystemService(Context.TELEPHONY_SERVICE));
+
+                }
+                break;
+            case R.id.Run_android_app_UiModeManager:
+                if (!checkPermission()) {
+                    requestPermission();
+                    useReflection(getSystemService(Context.UI_MODE_SERVICE));
+
+                } else {
+                    Snackbar.make(
+                            view,
+                            "Permission already granted.",
+                            Snackbar.LENGTH_LONG).show();
+                    useReflection(getSystemService(Context.UI_MODE_SERVICE));
 
                 }
                 break;
@@ -89,12 +183,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0) {
-                    boolean readExternalStorageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean writeExternalStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean readExternalStorageAccepted =
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean writeExternalStorageAccepted =
+                            grantResults[1] == PackageManager.PERMISSION_GRANTED;
 
                     if (readExternalStorageAccepted && writeExternalStorageAccepted)
                         Snackbar.make(
@@ -117,8 +214,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             public void onClick(DialogInterface dialog, int which) {
                                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                                     requestPermissions(
-                                                            new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE},
+                                                            new String[]{
+                                                                    READ_EXTERNAL_STORAGE,
+                                                                    WRITE_EXTERNAL_STORAGE},
                                                             PERMISSION_REQUEST_CODE);
+
                                                 }
 
                                             }
@@ -141,7 +241,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+    private void showMessageOKCancel(String message,
+                                     DialogInterface.OnClickListener okListener) {
         new AlertDialog.Builder(MainActivity.this)
                 .setMessage(message)
                 .setPositiveButton("OK", okListener)
@@ -152,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @SuppressWarnings("Duplicates")
-    private void useReflection() {
+    private void useReflection(Object varClass) {
         //counter variables
         int intCounter = 0;
         int stringCounter = 0;
@@ -171,7 +272,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, "Max string generated value: " + repeatedStringVal);
         //Make reflection call
         //String className = "android.content.Context";
-        WindowManager varClass = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        if (varClass == null) {
+            varClass = getSystemService(Context.WINDOW_SERVICE);
+
+        }
+
         Class classToInvestigate = null;
         try {
             //classToInvestigate = Class.forName(className);
