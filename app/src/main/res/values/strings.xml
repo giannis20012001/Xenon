@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Xenon</string>
-    <string name="save_to_external_storage">Save To External Storage</string>
+    <string name="Run_all_Class_Methods_and_save_to_external_storage">Run all Class methods and save to external storage</string>
+    <string name="Run_android_media_AudioManager">Run android.media.AudioManager</string>
+    <string name="Run_android_view_inputmethod_InputMethodManager">Run android.view.inputmethod.InputMethodManager</string>
+    <string name="Run_android_media_session_MediaSessionManager">Run android.media.session.MediaSessionManager</string>
+    <string name="Run_android_telephony_TelephonyManager">Run android.telephony.TelephonyManager</string>
+    <string name="Run_android_app_UiModeManager">Run android.app.UiModeManager</string>
 </resources>
